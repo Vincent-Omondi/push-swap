@@ -37,4 +37,10 @@ func main() {
 			return
 		}
 	}
+
+	if validate.IsSorted(stackA) && len(stackB) == 0 {
+		fmt.Println("OK")
+	} else {
+		fmt.Println("KO")
+	}
 }
