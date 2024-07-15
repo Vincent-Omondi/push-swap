@@ -40,8 +40,6 @@ func main() {
 			fmt.Fprintln(os.Stderr, "Error")
 			return
 		}
-		// Debug print after each instruction
-		fmt.Println("After", instruction, "stackA:", stackA, "stackB:", stackB)
 	}
 
 	if validate.IsSorted(stackA) && len(stackB) == 0 {
