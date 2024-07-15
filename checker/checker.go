@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/push-swap/pkg/execute"
 	"github.com/push-swap/pkg/validate"
 )
 
@@ -20,4 +21,20 @@ func main() {
 
 	stackB := []int{}
 	scanner := bufio.NewScanner(os.Stdin)
+	instructions := []string{}
+
+	for scanner.Scan() {
+		instruction := scanner.Text()
+		if instruction == "" {
+			break
+		}
+		instructions = append(instructions, instruction)
+	}
+
+	for _, instruction := range instructions {
+		if err := execute.ExecuteInstruction(instruction, &stackA, &stackB); err != nil {
+			fmt.Fprintln(os.Stderr, "Error")
+			return
+		}
+	}
 }
