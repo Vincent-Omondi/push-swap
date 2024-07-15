@@ -35,11 +35,6 @@ func main() {
 		instructions = append(instructions, instruction)
 	}
 
-	// Debug print before executing instructions
-	fmt.Println("Initial stackA:", stackA)
-	fmt.Println("Initial stackB:", stackB)
-	fmt.Println("Instructions:", instructions)
-
 	for _, instruction := range instructions {
 		if err := execute.ExecuteInstruction(instruction, &stackA, &stackB); err != nil {
 			fmt.Fprintln(os.Stderr, "Error")
