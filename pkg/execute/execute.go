@@ -1,4 +1,4 @@
-package checker
+package execute
 
 import "errors"
 
@@ -30,7 +30,7 @@ func ExecuteInstruction(instruction string, stackA, stackB *[]int) error {
 		reverseRotate(stackA)
 		reverseRotate(stackB)
 	default:
-		return errors.New("Invalid instruction")
+		return errors.New("invalid instruction")
 	}
 	return nil
 }
