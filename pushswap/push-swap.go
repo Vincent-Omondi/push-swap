@@ -1,4 +1,4 @@
-// pushswap/push-swap.go
+// main.go
 package main
 
 import (
@@ -15,74 +15,131 @@ func main() {
 		return
 	}
 
-	inputArgs := strings.Split(os.Args[1], " ")
-	stackA, err := validate.ParseInput(inputArgs)
+	input := strings.Split(os.Args[1], " ")
+	stackA, err := validate.ParseInput(input)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error")
 		return
 	}
 
-	instructions := generateInstructions(stackA)
-
-	for _, instruction := range instructions {
-		fmt.Println(instruction)
-	}
-}
-
-// Helper function to execute and store instructions
-func addInstruction(instruction string, stackA, stackB *[]int, instructions *[]string) {
-	*instructions = append(*instructions, instruction)
-	execute.ExecuteInstruction(instruction, stackA, stackB)
-}
-
-// Function to find the index of the smallest element
-func findMinIndex(stack []int) int {
-	minIndex := 0
-	for i := 1; i < len(stack); i++ {
-		if stack[i] < stack[minIndex] {
-			minIndex = i
-		}
-	}
-	return minIndex
-}
-
-// Function to generate the sequence of instructions
-func generateInstructions(stackA []int) []string {
-	stackB := []int{}
-	instructions := []string{}
-
-	// If the stack is already sorted, return immediately
 	if validate.IsSorted(stackA) {
-		return instructions
+		return
 	}
 
-	for len(stackA) > 0 {
-		minIndex := findMinIndex(stackA)
+	stackB := []int{}
+	commands := []string{}
 
-		// Bring the smallest element to the top
-		if minIndex > len(stackA)/2 {
-			for i := len(stackA) - 1; i >= minIndex; i-- {
-				addInstruction("rra", &stackA, &stackB, &instructions)
-			}
-		} else {
-			for i := 0; i < minIndex; i++ {
-				addInstruction("ra", &stackA, &stackB, &instructions)
+	// // Stage 1: Push two elements to stackB
+	// commands = append(commands, "pb", "pb")
+	// execute.ExecuteInstruction("pb", &stackA, &stackB)
+	// execute.ExecuteInstruction("pb", &stackA, &stackB)
+
+	// Stage 2: Sorting using calculated optimal commands
+	for len(stackA) > 3 {
+		targetIndex, minOps := -1, int(^uint(0)>>1)
+		for i := 0; i < len(stackA); i++ {
+			ops := calculateOperations(stackA, stackB, i)
+			if ops < minOps {
+				minOps = ops
+				targetIndex = i
 			}
 		}
-
-		// Push the smallest element to stack B
-		addInstruction("pb", &stackA, &stackB, &instructions)
-
-		// Try to sort within stack A
-		if len(stackA) > 1 && stackA[0] > stackA[1] {
-			addInstruction("sa", &stackA, &stackB, &instructions)
-		}
+		moveToTop(&stackA, targetIndex, &commands, "ra", "rra")
+		commands = append(commands, "pb")
+		execute.ExecuteInstruction("pb", &stackA, &stackB)
 	}
 
-	// Push all elements back to stack A
+	sortThree(&stackA, &commands)
+
+	// Stage 3: Push everything back to stackA
 	for len(stackB) > 0 {
-		addInstruction("pa", &stackA, &stackB, &instructions)
+		position := findPositionToInsert(stackA, stackB[0])
+		moveToTop(&stackA, position, &commands, "ra", "rra")
+		commands = append(commands, "pa")
+		execute.ExecuteInstruction("pa", &stackA, &stackB)
 	}
 
-	return instructions
+	// Stage 4: Final arrangement to bring the minimum to the top
+	minIndex := findMinIndex(stackA)
+	moveToTop(&stackA, minIndex, &commands, "ra", "rra")
+
+	for _, command := range commands {
+		fmt.Println(command)
+	}
+}
+
+func calculateOperations(stackA, stackB []int, targetIndex int) int {
+	element := stackA[targetIndex]
+	position := findPositionToInsert(stackB, element)
+	ops := 0
+
+	if targetIndex <= len(stackA)/2 {
+		ops += targetIndex
+	} else {
+		ops += len(stackA) - targetIndex
+	}
+
+	if position <= len(stackB)/2 {
+		ops += position
+	} else {
+		ops += len(stackB) - position
+	}
+
+	return ops
+}
+
+func moveToTop(stack *[]int, index int, commands *[]string, rotateCmd, reverseRotateCmd string) {
+	if index <= len(*stack)/2 {
+		for i := 0; i < index; i++ {
+			*commands = append(*commands, rotateCmd)
+			execute.ExecuteInstruction(rotateCmd, stack, nil)
+		}
+	} else {
+		for i := 0; i < len(*stack)-index; i++ {
+			*commands = append(*commands, reverseRotateCmd)
+			execute.ExecuteInstruction(reverseRotateCmd, stack, nil)
+		}
+	}
+}
+
+func sortThree(stack *[]int, commands *[]string) {
+	a, b, c := (*stack)[0], (*stack)[1], (*stack)[2]
+	if a > b && b < c && a < c {
+		*commands = append(*commands, "sa")
+		execute.ExecuteInstruction("sa", stack, nil)
+	} else if a > b && b > c && a > c {
+		*commands = append(*commands, "sa", "rra")
+		execute.ExecuteInstruction("sa", stack, nil)
+		execute.ExecuteInstruction("rra", stack, nil)
+	} else if a > b && b < c && a > c {
+		*commands = append(*commands, "ra")
+		execute.ExecuteInstruction("ra", stack, nil)
+	} else if a < b && b > c && a < c {
+		*commands = append(*commands, "sa", "ra")
+		execute.ExecuteInstruction("sa", stack, nil)
+		execute.ExecuteInstruction("ra", stack, nil)
+	} else if a < b && b > c && a > c {
+		*commands = append(*commands, "rra")
+		execute.ExecuteInstruction("rra", stack, nil)
+	}
+}
+
+func findPositionToInsert(stack []int, value int) int {
+	for i, v := range stack {
+		if v > value {
+			return i
+		}
+	}
+	return len(stack)
+}
+
+func findMinIndex(stack []int) int {
+	minIdx, minVal := 0, stack[0]
+	for i, v := range stack {
+		if v < minVal {
+			minIdx = i
+			minVal = v
+		}
+	}
+	return minIdx
 }
