@@ -29,11 +29,6 @@ func main() {
 	stackB := []int{}
 	commands := []string{}
 
-	// // Stage 1: Push two elements to stackB
-	// commands = append(commands, "pb", "pb")
-	// execute.ExecuteInstruction("pb", &stackA, &stackB)
-	// execute.ExecuteInstruction("pb", &stackA, &stackB)
-
 	// Stage 2: Sorting using calculated optimal commands
 	for len(stackA) > 3 {
 		targetIndex, minOps := -1, int(^uint(0)>>1)
