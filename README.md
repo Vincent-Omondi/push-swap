@@ -33,3 +33,10 @@
 - **Separation of Concerns**: Each file and package has a distinct responsibility, promoting readability and maintainability of the codebase.
   
 - **Command Line Interface**: `main.go` facilitates command-line argument parsing and task delegation to appropriate packages (`pushswap` or `checker`).
+
+
+### Resources
+
+- https://medium.com/@ayogun/push-swap-c1f5d2d41e97
+- https://en.wikipedia.org/wiki/Mechanical_Turk
+
